@@ -27,12 +27,12 @@ services:
       consul:
         condition: service_healthy
     ports:
-      - 8000:8000
+      - 80:80
       - 8443:8443
       - 8001:8001
       - 8444:8444
     expose:
-      - 8000
+      - 80
       - 8443
       - 8001
       - 8444
@@ -75,13 +75,13 @@ services:
       - KONG_DATABASE=postgres
       - KONG_PG_HOST=kong-database
       - KONG_PG_DATABASE=kong
-      - KONG_ADMIN_LISTEN=0.0.0.0:8001        
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001
     expose:
-      - 8000
+      - 80
       - 8001
       - 8443
       - 8444
     healthcheck:
-      test: ["CMD-SHELL", "curl -I -s -L http://127.0.0.1:8000 || exit 1"]
+      test: ["CMD-SHELL", "curl -I -s -L http://127.0.0.1:80 || exit 1"]
       interval: 5s
       retries: 10

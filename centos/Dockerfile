@@ -9,7 +9,7 @@ RUN yum install -y wget https://bintray.com/kong/kong-community-edition-rpm/down
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
-EXPOSE 8000 8443 8001 8444
+EXPOSE 80 8443 8001 8444
 
 STOPSIGNAL SIGTERM
 

@@ -22,7 +22,7 @@ To scale Kong (ie, to three instances) execute:
 $ docker-compose scale kong=3
 ```
 
-Kong will be available through the `nginx-lb` instance on port `8000`, `8443` and `8001`. You can customize the template with your own environment variables or datastore configuration.
+Kong will be available through the `nginx-lb` instance on port `80`, `8443` and `8001`. You can customize the template with your own environment variables or datastore configuration.
 
 Kong's documentation can be found at [getkong.org/docs][kong-docs-url].
 

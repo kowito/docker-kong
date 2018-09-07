@@ -2,9 +2,9 @@
   "consul": "consul:8500",
   "services": [
     {
-      "name": "kong-8000",
-      "port": 8000,
-      "health": "/usr/bin/curl -o /dev/null -s http://localhost:8000/",
+      "name": "kong-80",
+      "port": 80,
+      "health": "/usr/bin/curl -o /dev/null -s http://localhost:80/",
       "poll": 3,
       "ttl": 10
     },

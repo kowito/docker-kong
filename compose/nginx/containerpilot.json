@@ -17,7 +17,7 @@
   ],
   "backends": [
     {
-      "name": "kong-8000",
+      "name": "kong-80",
       "poll": 4,
       "onChange": "/bin/reload-nginx.sh onChange"
     },
