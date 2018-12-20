@@ -1,10 +1,13 @@
 FROM alpine:3.6
 LABEL maintainer="Kong Core Team <team-core@konghq.com>"
 
-ENV KONG_VERSION 1.0.0rc3
-ENV KONG_SHA256 4af1b014cb9a827149c74d3fe795fab6a96892cf07eb7bafc197d7c23b0bd2a4
+ENV KONG_VERSION 1.0.0
+ENV KONG_SHA256 79001d96c28d774bcf868f281e8e3486c4027ed35d69da6560172a742240b862
 
-RUN apk add --no-cache --virtual .build-deps wget tar ca-certificates \
+RUN adduser -Su 1337 kong \
+	&& mkdir -p "/usr/local/kong" \
+	&& chown kong "/usr/local/kong" \
+	&& apk add --no-cache --virtual .build-deps wget tar ca-certificates libcap \
 	&& apk add --no-cache libgcc openssl pcre perl tzdata curl \
 	&& wget -O kong.tar.gz "https://bintray.com/kong/kong-community-edition-alpine-tar/download_file?file_path=kong-community-edition-$KONG_VERSION.apk.tar.gz" \
 	&& echo "$KONG_SHA256 *kong.tar.gz" | sha256sum -c - \
@@ -14,15 +17,13 @@ RUN apk add --no-cache --virtual .build-deps wget tar ca-certificates \
 	&& rm -rf /tmp/usr \
 	&& cp -R /tmp/etc / \
 	&& rm -rf /tmp/etc \
-	&& apk del .build-deps \
-	# OpenShift specific. OpenShift runs containers using an arbitrarily assigned user ID.
-	# This user doesn't have access to change file permissions during runtime, they have to be changed during image building.
-	# https://docs.okd.io/latest/creating_images/guidelines.html#use-uid
-	&& mkdir -p "/usr/local/kong" \
-	&& chgrp -R 0 "/usr/local/kong" \
-	&& chmod -R g=u "/usr/local/kong"
+	&& setcap cap_net_raw=+ep /usr/local/openresty/nginx/sbin/nginx \
+	&& apk del .build-deps
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
+
+USER kong
+
 ENTRYPOINT ["/docker-entrypoint.sh"]
 
 EXPOSE 8000 8443 8001 8444
