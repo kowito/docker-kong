@@ -1,10 +1,11 @@
 version: '2.1'
 
 volumes:
-    kong_data: {}
+  kong_data: {}
 
 networks:
   kong-net:
+
 services:
   kong-migrations:
     image: "${KONG_DOCKER_TAG:-kong:latest}"
@@ -18,14 +19,29 @@ services:
       KONG_PG_HOST: db
       KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-kong}
       KONG_PG_USER: ${KONG_PG_USER:-kong}
-    links:
-      - db:db
     networks:
       - kong-net
     restart: on-failure
+
+  kong-migrations-up:
+    image: "${KONG_DOCKER_TAG:-kong:latest}"
+    command: kong migrations up && kong migrations finish
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: ${KONG_PG_DATABASE:-kong}
+      KONG_PG_HOST: db
+      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-kong}
+      KONG_PG_USER: ${KONG_PG_USER:-kong}
+    networks:
+      - kong-net
+    restart: on-failure
+
   kong:
     image: "${KONG_DOCKER_TAG:-kong:latest}"
-    user: "${KONG_USER:-root}"
+    user: "${KONG_USER:-kong}"
     depends_on:
       db:
         condition: service_healthy
@@ -48,25 +64,13 @@ services:
       - "8001:8001/tcp"
       - "8443:8443/tcp"
       - "8444:8444/tcp"
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
     restart: on-failure
-  konga:
-    image: pantsel/konga:next #(or latest)
-    container_name: konga
-    depends_on:
-      - kong
-    ports:
-      - 1337:1337
-    links:
-      - db:db
-      - kong:kong
-    environment:
-      DB_ADAPTER: postgres
-      DB_HOST: db
-      DB_DATABASE: postgres
-      DB_PASSWORD: ${KONG_PG_PASSWORD:-kong}
-      DB_USER: ${KONG_PG_USER:-kong}
-      NODE_ENV: development
-
+    
   db:
     image: postgres:9.5
     environment:
@@ -85,3 +89,25 @@ services:
       - kong-net
     volumes:
       - kong_data:/var/lib/postgresql/data
+
+
+  konga:
+    image: pantsel/konga:latest #(or latest)
+    container_name: konga
+    depends_on:
+      - kong
+    ports:
+      - 1337:1337
+    links:
+      - db:db
+      - kong:kong
+    networks:
+      - kong-net
+    environment:
+      DB_ADAPTER: postgres
+      DB_HOST: db
+      DB_DATABASE: ${KONG_PG_DATABASE:-kong}
+      DB_PASSWORD: ${KONG_PG_PASSWORD:-kong}
+      DB_USER: ${KONG_PG_USER:-kong}
+      NODE_ENV: development
+
